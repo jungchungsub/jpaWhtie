@@ -2,6 +2,7 @@ package site.metacoding.white.web;
 
 import javax.servlet.http.HttpSession;
 
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -29,12 +30,18 @@ public class BoardApiController {
     @PostMapping("/board")
     public ResponseDto<?> save(@RequestBody BoardSaveReqDto boardSaveReqDto) {
         SessionUser sessionUser = (SessionUser) session.getAttribute("sessionUser");
+
+        if (sessionUser == null) {
+            throw new RuntimeException("로그인을 진행해주세요");
+        }
+
         boardSaveReqDto.setSessionUser(sessionUser);
         BoardSaveRespDto boardSaveRespDto = boardService.save(boardSaveReqDto); // 서비스에는 단 하나의 객체만 전달한다.
         return new ResponseDto<>(1, "성공", boardSaveRespDto);
     }
 
-    // 게시글 상세보기
+    // 게시글 상세보기 (Board + user)
+    @CrossOrigin
     @GetMapping("/board/{id}")
     public ResponseDto<?> findById(@PathVariable Long id) {
         return new ResponseDto<>(1, "성공", boardService.findById(id));
@@ -47,12 +54,22 @@ public class BoardApiController {
 
     @PutMapping("/board/{id}")
     public ResponseDto<?> update(@PathVariable Long id, @RequestBody BoardUpdateReqDto boardUpdateReqDto) {
+        SessionUser sessionUser = (SessionUser) session.getAttribute("sessionUser");
+        if (sessionUser == null) {
+            throw new RuntimeException("로그인을 진행해주세요");
+        }
+
         boardUpdateReqDto.setId(id);
         return new ResponseDto<>(1, "성공", boardService.update(boardUpdateReqDto));
     }
 
     @DeleteMapping("/board/{id}")
     public ResponseDto<?> deleteById(@PathVariable Long id) {
+        SessionUser sessionUser = (SessionUser) session.getAttribute("sessionUser");
+        if (sessionUser == null) {
+            throw new RuntimeException("로그인을 진행해주세요");
+        }
+
         boardService.deleteById(id);
         return new ResponseDto<>(1, "성공", null);
     }

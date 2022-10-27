@@ -1,10 +1,13 @@
 package site.metacoding.white.dto;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import lombok.Getter;
 import lombok.Setter;
 import site.metacoding.white.domain.Board;
+import site.metacoding.white.domain.Comment;
 import site.metacoding.white.domain.User;
 
 public class BoardRespDto {
@@ -37,23 +40,51 @@ public class BoardRespDto {
         }
     }
 
+    // findId
     @Setter
     @Getter
     public static class BoardDetailRespDto {
         private Long id;
         private String title;
         private String content;
-        private UserDto user;
+        private BoardUserDto user;
+        private List<CommentDto> comment = new ArrayList<>();
 
         @Setter
         @Getter
-        public static class UserDto {
+        public static class BoardUserDto {
             private Long id;
             private String username;
 
-            public UserDto(User user) {
-                this.id = user.getId();
-                this.username = user.getUsername();
+            public BoardUserDto(User user) {
+                this.id = user.getId(); // Lazy
+                this.username = user.getUsername(); // Lazy
+            }
+        }
+
+        @Setter
+        @Getter
+        public static class CommentDto { // 만든목적 comment를 commentDto로 바꾸기 위해 만들었다.
+            private Long id;
+            private String content;
+            private CommentUserDto user;
+
+            public CommentDto(Comment comment) {
+                this.id = comment.getId();
+                this.content = comment.getContent();
+                this.user = new CommentUserDto(comment.getUser());
+            }
+
+            @Setter
+            @Getter
+            public static class CommentUserDto {
+                private Long id;
+                private String username;
+
+                public CommentUserDto(User user) {
+                    this.id = user.getId();
+                    this.username = user.getUsername();
+                }
             }
         }
 
@@ -61,7 +92,14 @@ public class BoardRespDto {
             this.id = board.getId();
             this.title = board.getTitle();
             this.content = board.getContent();
-            this.user = new UserDto(board.getUser());
+            this.user = new BoardUserDto(board.getUser());
+
+            // List<CommnetDto> <-- List<Comment>
+            //////////////////////////////
+            // this.comment = board.getComments();
+            this.comment = board.getComments().stream().map((comment) -> new CommentDto(comment))
+                    .collect(Collectors.toList());
+
         }
     }
 

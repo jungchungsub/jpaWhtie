@@ -2,6 +2,8 @@ package site.metacoding.white.web;
 
 import javax.servlet.http.HttpSession;
 
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
@@ -22,7 +24,24 @@ public class CommentApiController {
     @PostMapping("/comment")
     public ResponseDto<?> save(@RequestBody CommentSaveReqDto commentSaveReqDto) {
         SessionUser sessionUser = (SessionUser) session.getAttribute("sessionUser");
+        if (sessionUser == null) {
+            throw new RuntimeException("로그인을 진행해주세요");
+        }
+
         commentSaveReqDto.setSessionUser(sessionUser);
         return new ResponseDto<>(1, "성공", commentService.save(commentSaveReqDto));
     }
+
+    @DeleteMapping("/comment/{id}")
+    public ResponseDto<?> deleteById(@PathVariable Long id) {
+
+        SessionUser sessionUser = (SessionUser) session.getAttribute("sessionUser");
+
+        if (sessionUser == null) {
+            throw new RuntimeException("로그인을 진행해주세요");
+        }
+        commentService.deleteById(id);
+        return new ResponseDto<>(1, "성공", null);
+    }
+
 }
